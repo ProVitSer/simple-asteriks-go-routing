@@ -1,0 +1,36 @@
+
+globals {};
+
+context handler {
+    addheader => {
+        Set(PJSIP_HEADER(add,Remote-Party-ID)= "${ARG2}" <sip:${ARG1}@192.168.0.52>;party=calling;privacy=off;screen=no);
+        return;
+    }
+}
+
+context 3cx-bridge {
+    _X. => {
+        Dial(PJSIP/${EXTEN}@10003,,Ttb(handler^addheader^1(${EXTEN},${CALLERID(name)})));
+    }
+}
+
+context 3cx-default-route {
+    _X. => {
+        Dial(PJSIP/99911,360,tT);
+    }
+}
+
+context codims-in {
+    _99911 => {
+        Stasis(codims);
+        Dial(PJSIP/99911,360,tT);
+    }
+}
+
+
+context codims-out {
+        _xxxxxxxxxxx => {
+				NoOp(${EXTEN});
+                Dial(PJSIP/${EXTEN}@zadarma,180,tT);
+        }
+}
